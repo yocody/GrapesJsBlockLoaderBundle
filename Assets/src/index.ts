@@ -87,10 +87,26 @@ const GrapesJsBlockLoader: grapesjs.Plugin = ( editor ) => {
                 script.onload = () => {
                     resolve( script );
                     const bm = editor.BlockManager;
+                    const allBlocks = bm.getAll();
+                    
                     // remove default blocks
                     if ( window.CustomBlockLoaderNamespace.removeDefaults === true ) {
-                        bm.getAll().reset();
+                        allBlocks.reset();
                     }
+                    
+                    // keep defined default blocks, remove others
+                    if ( window.CustomBlockLoaderNamespace.removeDefaults === false && window.CustomBlockLoaderNamespace.blocksToKeep !== null && typeof window.CustomBlockLoaderNamespace.blocksToKeep !== 'undefined' && window.CustomBlockLoaderNamespace.blocksToKeep.length > 0 ) {
+                        let blocksToRemove:any = [];
+                        allBlocks.each( ( defaultBlock:any ) => {
+                            if ( !window.CustomBlockLoaderNamespace.blocksToKeep.includes( defaultBlock.attributes.id ) ) {
+                                blocksToRemove.push( defaultBlock.attributes.id );
+                            }
+                        } );
+                        blocksToRemove.forEach( ( btr:any ) => {
+                            bm.remove( btr );
+                        });
+                    }
+                    
                     // add custom blocks
                     for ( const id in window.CustomBlockLoaderNamespace.blocks ) {
                         if ( typeof id == 'string' ) {
